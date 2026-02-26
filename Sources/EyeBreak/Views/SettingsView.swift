@@ -13,44 +13,41 @@ struct SettingsView: View {
             Section("Timing") {
                 HStack {
                     Text("Work Duration")
-                    Spacer()
+                        .frame(width: 100, alignment: .leading)
+                    Slider(value: $workMinutes, in: 5...60, step: 5)
+                        .onChange(of: workMinutes) { _, newVal in
+                            settings.workDuration = newVal * 60
+                        }
                     Text("\(Int(workMinutes)) min")
                         .foregroundStyle(.secondary)
                         .monospacedDigit()
-                }
-                Slider(value: $workMinutes, in: 5...60, step: 5) {
-                    Text("Work Duration")
-                }
-                .onChange(of: workMinutes) { _, newVal in
-                    settings.workDuration = newVal * 60
+                        .frame(width: 55, alignment: .trailing)
                 }
 
                 HStack {
                     Text("Break Duration")
-                    Spacer()
+                        .frame(width: 100, alignment: .leading)
+                    Slider(value: $breakSeconds, in: 5...120, step: 5)
+                        .onChange(of: breakSeconds) { _, newVal in
+                            settings.breakDuration = newVal
+                        }
                     Text("\(Int(breakSeconds)) sec")
                         .foregroundStyle(.secondary)
                         .monospacedDigit()
-                }
-                Slider(value: $breakSeconds, in: 5...120, step: 5) {
-                    Text("Break Duration")
-                }
-                .onChange(of: breakSeconds) { _, newVal in
-                    settings.breakDuration = newVal
+                        .frame(width: 55, alignment: .trailing)
                 }
 
                 HStack {
                     Text("Idle Threshold")
-                    Spacer()
+                        .frame(width: 100, alignment: .leading)
+                    Slider(value: $idleSeconds, in: 10...120, step: 5)
+                        .onChange(of: idleSeconds) { _, newVal in
+                            settings.idleThreshold = newVal
+                        }
                     Text("\(Int(idleSeconds)) sec")
                         .foregroundStyle(.secondary)
                         .monospacedDigit()
-                }
-                Slider(value: $idleSeconds, in: 10...120, step: 5) {
-                    Text("Idle Threshold")
-                }
-                .onChange(of: idleSeconds) { _, newVal in
-                    settings.idleThreshold = newVal
+                        .frame(width: 55, alignment: .trailing)
                 }
             }
 
@@ -76,7 +73,7 @@ struct SettingsView: View {
             }
         }
         .formStyle(.grouped)
-        .frame(width: 380, height: 420)
+        .frame(width: 520, height: 420)
         .onAppear {
             workMinutes = settings.workDuration / 60
             breakSeconds = settings.breakDuration
