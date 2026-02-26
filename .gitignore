@@ -1,0 +1,7 @@
+.build/
+EyeBreak.app/
+AppIcon.iconset/
+*.xcodeproj
+xcuserdata/
+.DS_Store
+.swiftpm/
