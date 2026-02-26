@@ -4,6 +4,10 @@ A lightweight macOS menu bar app that reminds you to take regular breaks to prot
 
 EyeBreak monitors your keyboard and mouse activity, tracks continuous screen time, and displays a full-screen overlay when it's time to rest — following the 20-20-20 rule (every 20 minutes, look at something 20 feet away for 20 seconds).
 
+## Download
+
+[**EyeBreak v1.0.0** — macOS (Apple Silicon)](https://github.com/WetABQ/eye-break/releases/download/v1.0.0/EyeBreak-v1.0-macos-arm64.zip)
+
 ## Features
 
 - **Menu bar app** — lives in your menu bar with a live countdown timer, no Dock icon
