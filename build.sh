@@ -26,7 +26,7 @@ mkdir -p "${RESOURCES_DIR}"
 cp "${BINARY_PATH}" "${MACOS_DIR}/${APP_NAME}"
 
 # Copy app icon
-cp AppIcon.icns "${RESOURCES_DIR}/AppIcon.icns"
+cp assets/icons/AppIcon.icns "${RESOURCES_DIR}/AppIcon.icns"
 
 cat > "${CONTENTS_DIR}/Info.plist" << 'PLIST'
 <?xml version="1.0" encoding="UTF-8"?>

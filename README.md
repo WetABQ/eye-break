@@ -21,9 +21,9 @@ EyeBreak monitors your keyboard and mouse activity, tracks continuous screen tim
 
 ## Screenshots
 
-When it's time for a break, a full-screen overlay appears:
-
-> "Time to Rest Your Eyes — Look at something 20 feet away"
+| Menu Bar Popover | Break Overlay | Settings |
+|:---:|:---:|:---:|
+| ![Popover](assets/screenshots/popover.jpg) | ![Break](assets/screenshots/cover.jpg) | ![Settings](assets/screenshots/config.jpg) |
 
 ## Requirements
 
