@@ -55,5 +55,8 @@ cat > "${CONTENTS_DIR}/Info.plist" << 'PLIST'
 </plist>
 PLIST
 
+echo "==> Signing ${APP_BUNDLE}..."
+codesign --force --deep --sign - "${APP_BUNDLE}"
+
 echo "==> Done! Run with: open ${APP_BUNDLE}"
 echo "    Or: ./${APP_BUNDLE}/Contents/MacOS/${APP_NAME}"

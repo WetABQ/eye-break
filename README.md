@@ -25,6 +25,17 @@ EyeBreak monitors your keyboard and mouse activity, tracks continuous screen tim
 |:---:|:---:|:---:|
 | ![Popover](assets/screenshots/popover.jpg) | ![Break](assets/screenshots/cover.jpg) | ![Settings](assets/screenshots/config.jpg) |
 
+## Installation
+
+1. Download the zip from [Releases](https://github.com/WetABQ/eye-break/releases)
+2. Unzip and move `EyeBreak.app` to Applications
+3. **Important:** Since the app is not notarized with Apple, macOS will block it on first launch. Remove the quarantine flag:
+   ```bash
+   xattr -cr /Applications/EyeBreak.app
+   ```
+   Or: right-click the app → **Open** → click **Open** in the dialog.
+4. Grant Accessibility permission when prompted
+
 ## Requirements
 
 - macOS 14.0 (Sonoma) or later

@@ -1,4 +1,5 @@
 import SwiftUI
+import ServiceManagement
 
 struct SettingsView: View {
     let settings: AppSettings
@@ -7,6 +8,7 @@ struct SettingsView: View {
     @State private var workMinutes: Double = 20
     @State private var breakSeconds: Double = 20
     @State private var idleSeconds: Double = 30
+    @State private var launchAtLogin: Bool = SMAppService.mainApp.status == .enabled
 
     var body: some View {
         Form {
@@ -56,6 +58,21 @@ struct SettingsView: View {
                     get: { settings.showLiveTimer },
                     set: { settings.showLiveTimer = $0 }
                 ))
+            }
+
+            Section("General") {
+                Toggle("Launch at Login", isOn: $launchAtLogin)
+                    .onChange(of: launchAtLogin) { _, newVal in
+                        do {
+                            if newVal {
+                                try SMAppService.mainApp.register()
+                            } else {
+                                try SMAppService.mainApp.unregister()
+                            }
+                        } catch {
+                            launchAtLogin = SMAppService.mainApp.status == .enabled
+                        }
+                    }
             }
 
             if let onPreviewBreak {
