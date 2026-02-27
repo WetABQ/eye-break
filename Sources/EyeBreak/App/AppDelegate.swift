@@ -173,17 +173,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     // MARK: - Permission & Start
 
     private func checkPermissionAndStart() {
-        if permissionManager.check() {
-            // Already trusted — just start
-            appState.hasAccessibilityPermission = true
-            workTimerService.start()
-        } else {
-            // Not trusted — poll in background, let user grant via popover button
-            appState.hasAccessibilityPermission = false
+        let hasPermission = permissionManager.check()
+        appState.hasAccessibilityPermission = hasPermission
+
+        // Always start the timer — CGEventSource-based idle detection
+        // works without Accessibility permission.
+        workTimerService.start()
+
+        if !hasPermission {
             permissionManager.startPolling { [weak self] in
-                guard let self else { return }
-                self.appState.hasAccessibilityPermission = true
-                self.workTimerService.start()
+                self?.appState.hasAccessibilityPermission = true
             }
         }
     }

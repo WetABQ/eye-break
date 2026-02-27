@@ -10,9 +10,12 @@ final class OverlayWindowManager {
     func showOverlay(appState: AppState) {
         removeAllWindows()
 
+        // Activate the app so overlay windows appear even when the app is in the background.
+        NSApp.activate(ignoringOtherApps: true)
+
         for screen in NSScreen.screens {
             let window = createOverlayWindow(for: screen, appState: appState)
-            window.makeKeyAndOrderFront(nil)
+            window.orderFrontRegardless()
             windows.append(window)
         }
 

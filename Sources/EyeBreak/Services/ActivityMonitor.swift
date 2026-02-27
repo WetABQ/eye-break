@@ -1,44 +1,19 @@
 import Cocoa
 
 final class ActivityMonitor {
-    private(set) var lastActivityTime: Date = Date()
-    private var globalMonitor: Any?
-    private var localMonitor: Any?
-
-    private let monitoredEvents: NSEvent.EventTypeMask = [
-        .mouseMoved, .leftMouseDown, .rightMouseDown,
-        .keyDown, .scrollWheel, .leftMouseDragged, .rightMouseDragged
-    ]
-
-    func startMonitoring() {
-        lastActivityTime = Date()
-
-        globalMonitor = NSEvent.addGlobalMonitorForEvents(matching: monitoredEvents) { [weak self] _ in
-            self?.lastActivityTime = Date()
-        }
-
-        localMonitor = NSEvent.addLocalMonitorForEvents(matching: monitoredEvents) { [weak self] event in
-            self?.lastActivityTime = Date()
-            return event
-        }
-    }
-
-    func stopMonitoring() {
-        if let globalMonitor {
-            NSEvent.removeMonitor(globalMonitor)
-            self.globalMonitor = nil
-        }
-        if let localMonitor {
-            NSEvent.removeMonitor(localMonitor)
-            self.localMonitor = nil
-        }
-    }
-
+    /// Uses CGEventSource to query system-wide idle time directly from the HID system.
+    /// Unlike NSEvent global monitors, this works without Accessibility permission.
     func idleDuration() -> TimeInterval {
-        Date().timeIntervalSince(lastActivityTime)
+        let types: [CGEventType] = [
+            .mouseMoved, .leftMouseDown, .rightMouseDown,
+            .keyDown, .scrollWheel, .leftMouseDragged, .rightMouseDragged
+        ]
+        return types.map {
+            CGEventSource.secondsSinceLastEventType(.combinedSessionState, eventType: $0)
+        }.min() ?? 0
     }
 
-    deinit {
-        stopMonitoring()
-    }
+    // Kept for API compatibility with WorkTimerService sleep/wake handling.
+    func startMonitoring() {}
+    func stopMonitoring() {}
 }
