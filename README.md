@@ -6,7 +6,7 @@ EyeBreak monitors your keyboard and mouse activity, tracks continuous screen tim
 
 ## Download
 
-[**EyeBreak v1.2.0** — macOS (Apple Silicon)](https://github.com/WetABQ/eye-break/releases/download/v1.2.0/EyeBreak-v1.2-macos-arm64.zip)
+[**EyeBreak v1.2.1** — macOS (Apple Silicon)](https://github.com/WetABQ/eye-break/releases/download/v1.2.1/EyeBreak-v1.2.1-macos-arm64.zip)
 
 ## Features
 
