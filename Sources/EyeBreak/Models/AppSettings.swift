@@ -26,6 +26,17 @@ final class AppSettings {
 
     init() {
         let defaults = UserDefaults.standard
+
+        // Version migration — fix settings for existing users on upgrade.
+        let storedVersion = defaults.integer(forKey: "settingsVersion")
+        if storedVersion < 1 {
+            // v1: countMediaAsScreenTime was originally defaulted to false,
+            // which got persisted. Force it to true so media playback
+            // (e.g. Arc watching videos) keeps the timer running.
+            defaults.set(true, forKey: "countMediaAsScreenTime")
+            defaults.set(1, forKey: "settingsVersion")
+        }
+
         if defaults.object(forKey: "workDuration") == nil {
             defaults.set(Constants.defaultWorkDuration, forKey: "workDuration")
         }
@@ -42,7 +53,7 @@ final class AppSettings {
             defaults.set(true, forKey: "showLiveTimer")
         }
         if defaults.object(forKey: "countMediaAsScreenTime") == nil {
-            defaults.set(false, forKey: "countMediaAsScreenTime")
+            defaults.set(true, forKey: "countMediaAsScreenTime")
         }
         if defaults.object(forKey: "showIdleReminder") == nil {
             defaults.set(true, forKey: "showIdleReminder")

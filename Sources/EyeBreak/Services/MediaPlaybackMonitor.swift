@@ -47,18 +47,22 @@ final class MediaPlaybackMonitor {
         var assertionsByProcess: Unmanaged<CFDictionary>?
         let result = IOPMCopyAssertionsByProcess(&assertionsByProcess)
         guard result == kIOReturnSuccess,
-              let dict = assertionsByProcess?.takeRetainedValue() as? [String: [[String: Any]]] else {
+              let cfDict = assertionsByProcess?.takeRetainedValue() else {
             return false
         }
 
-        for (processName, assertions) in dict {
-            if ignoredProcesses.contains(processName) { continue }
+        // Keys are PIDs (NSNumber), not process names.
+        let dict = cfDict as NSDictionary
+        for (_, value) in dict {
+            guard let assertions = value as? [[String: Any]] else { continue }
 
             for assertion in assertions {
-                if let type = assertion[kIOPMAssertionTypeKey] as? String,
-                   mediaAssertionTypes.contains(type) {
-                    return true
-                }
+                guard let type = assertion[kIOPMAssertionTypeKey] as? String,
+                      mediaAssertionTypes.contains(type) else { continue }
+
+                let processName = assertion["Process Name"] as? String ?? ""
+                if ignoredProcesses.contains(processName) { continue }
+                return true
             }
         }
 

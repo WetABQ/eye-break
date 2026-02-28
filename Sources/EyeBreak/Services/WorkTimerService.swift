@@ -6,6 +6,7 @@ final class WorkTimerService {
     private let activityMonitor: ActivityMonitor
     private let breakManager: BreakManager
     private let mediaMonitor: MediaPlaybackMonitor
+    private let audioInputMonitor: AudioInputMonitor
 
     /// Called when the timer transitions from working → paused due to idle.
     /// Parameter is the elapsed work time at the moment of pausing.
@@ -15,12 +16,13 @@ final class WorkTimerService {
     private var sleepObserver: Any?
     private var wakeObserver: Any?
 
-    init(appState: AppState, settings: AppSettings, activityMonitor: ActivityMonitor, breakManager: BreakManager, mediaMonitor: MediaPlaybackMonitor) {
+    init(appState: AppState, settings: AppSettings, activityMonitor: ActivityMonitor, breakManager: BreakManager, mediaMonitor: MediaPlaybackMonitor, audioInputMonitor: AudioInputMonitor) {
         self.appState = appState
         self.settings = settings
         self.activityMonitor = activityMonitor
         self.breakManager = breakManager
         self.mediaMonitor = mediaMonitor
+        self.audioInputMonitor = audioInputMonitor
 
         self.breakManager.onBreakFinished = { [weak self] in
             self?.transitionToIdle()
@@ -50,7 +52,8 @@ final class WorkTimerService {
 
         let idle = activityMonitor.idleDuration()
         let mediaPlaying = settings.countMediaAsScreenTime && mediaMonitor.isMediaPlaying()
-        let userActive = idle < settings.idleThreshold || mediaPlaying
+        let micActive = audioInputMonitor.isMicrophoneActive()
+        let userActive = idle < settings.idleThreshold || mediaPlaying || micActive
 
         switch appState.phase {
         case .idle:

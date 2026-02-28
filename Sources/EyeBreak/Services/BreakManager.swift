@@ -5,6 +5,9 @@ final class BreakManager {
     private let settings: AppSettings
     private let overlayManager: OverlayWindowManager
     private var breakTimer: Timer?
+    private var isPreview = false
+    private var savedPhase: AppPhase?
+    private var savedElapsedWork: TimeInterval?
 
     var onBreakFinished: (() -> Void)?
 
@@ -18,7 +21,12 @@ final class BreakManager {
         }
     }
 
-    func startBreak() {
+    func startBreak(preview: Bool = false) {
+        isPreview = preview
+        if preview {
+            savedPhase = appState.phase
+            savedElapsedWork = appState.elapsedWork
+        }
         appState.phase = .onBreak
         appState.remainingBreak = settings.breakDuration
 
@@ -42,7 +50,15 @@ final class BreakManager {
         DispatchQueue.main.async { [self] in
             overlayManager.hideOverlay()
             appState.remainingBreak = 0
-            onBreakFinished?()
+            if isPreview, let phase = savedPhase, let elapsed = savedElapsedWork {
+                appState.phase = phase
+                appState.elapsedWork = elapsed
+                savedPhase = nil
+                savedElapsedWork = nil
+            } else {
+                onBreakFinished?()
+            }
+            isPreview = false
         }
     }
 

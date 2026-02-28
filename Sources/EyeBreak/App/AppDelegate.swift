@@ -15,6 +15,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let permissionManager = PermissionManager()
     private let activityMonitor = ActivityMonitor()
     private let mediaMonitor = MediaPlaybackMonitor()
+    private let audioInputMonitor = AudioInputMonitor()
     private var overlayManager: OverlayWindowManager!
     private var breakManager: BreakManager!
     private var workTimerService: WorkTimerService!
@@ -37,7 +38,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             settings: settings,
             activityMonitor: activityMonitor,
             breakManager: breakManager,
-            mediaMonitor: mediaMonitor
+            mediaMonitor: mediaMonitor,
+            audioInputMonitor: audioInputMonitor
         )
 
         setupStatusItem()
@@ -64,14 +66,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         button.image = NSImage(systemSymbolName: "eye", accessibilityDescription: "EyeBreak")
 
         switch appState.phase {
-        case .idle:
+        case .idle, .onBreak:
             button.title = ""
         case .working:
             button.title = settings.showLiveTimer ? " \(appState.formattedWorkLeft)" : ""
         case .paused:
             button.title = settings.showLiveTimer ? " ⏸ \(appState.formattedWorkLeft)" : ""
-        case .onBreak:
-            button.title = settings.showLiveTimer ? " \(appState.formattedRemaining)" : ""
         }
     }
 
@@ -165,7 +165,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         let settingsView = SettingsView(settings: settings, onPreviewBreak: { [weak self] in
-            self?.breakManager.startBreak()
+            self?.breakManager.startBreak(preview: true)
         })
         let hostingController = NSHostingController(rootView: settingsView)
 
@@ -227,10 +227,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 .font(.system(size: 11))
                 .foregroundStyle(.secondary)
         }
+        .frame(width: 240)
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
-        .background(VisualEffectBackground())
-        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .adaptiveGlassBackground()
 
         let hostingController = NSHostingController(rootView: view)
         hostingController.view.wantsLayer = true
