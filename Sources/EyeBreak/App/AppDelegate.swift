@@ -167,7 +167,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         window.title = "EyeBreak Settings"
         window.styleMask = [.titled, .closable]
         if #available(macOS 26.0, *) {
-            window.titlebarAppearsTransparent = true
             window.backgroundColor = .clear
         }
         window.center()

@@ -64,14 +64,11 @@ struct SettingsView: View {
                     .foregroundStyle(.secondary)
             }
 
-            Section("Menu Bar") {
+            Section("General") {
                 Toggle("Show Live Timer", isOn: Binding(
                     get: { settings.showLiveTimer },
                     set: { settings.showLiveTimer = $0 }
                 ))
-            }
-
-            Section("General") {
                 Toggle("Launch at Login", isOn: $launchAtLogin)
                     .onChange(of: launchAtLogin) { _, newVal in
                         do {
@@ -97,25 +94,18 @@ struct SettingsView: View {
                     }
                     .font(.caption)
                 }
-            }
 
-            if let onPreviewBreak {
-                Section {
+                if let onPreviewBreak {
                     Button(action: onPreviewBreak) {
                         Label("Preview Break", systemImage: "eye")
                     }
                 }
             }
-
-            Section("Info") {
-                Text("EyeBreak monitors your screen activity and reminds you to take breaks to protect your eyes.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
         }
         .formStyle(.grouped)
+        .scrollIndicators(.never)
         .adaptiveFormBackground()
-        .frame(width: 520, height: 500)
+        .frame(width: 420, height: 400)
         .onAppear {
             workMinutes = settings.workDuration / 60
             breakSeconds = settings.breakDuration

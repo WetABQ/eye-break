@@ -15,7 +15,9 @@ extension View {
     @ViewBuilder
     func adaptiveFormBackground() -> some View {
         if #available(macOS 26.0, *) {
-            self.scrollContentBackground(.hidden)
+            self
+                .scrollContentBackground(.hidden)
+                .glassEffect(.regular, in: .rect(cornerRadius: 10))
         } else {
             self
         }
