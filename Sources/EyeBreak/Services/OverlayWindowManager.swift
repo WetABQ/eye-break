@@ -10,11 +10,16 @@ final class OverlayWindowManager {
     func showOverlay(appState: AppState) {
         removeAllWindows()
 
-        // Activate the app so overlay windows appear even when the app is in the background.
+        // Temporarily switch to .regular so the app can activate and bring
+        // overlay windows to the front even without prior user interaction.
+        // On macOS 14+ the ignoringOtherApps parameter of activate() is
+        // silently ignored for .accessory apps that were never foregrounded.
+        NSApp.setActivationPolicy(.regular)
         NSApp.activate(ignoringOtherApps: true)
 
         for screen in NSScreen.screens {
             let window = createOverlayWindow(for: screen, appState: appState)
+            window.makeKeyAndOrderFront(nil)
             window.orderFrontRegardless()
             windows.append(window)
         }
@@ -34,6 +39,8 @@ final class OverlayWindowManager {
             NotificationCenter.default.removeObserver(observer)
             screenObserver = nil
         }
+        // Restore accessory policy so the app hides from the Dock again.
+        NSApp.setActivationPolicy(.accessory)
     }
 
     private func createOverlayWindow(for screen: NSScreen, appState: AppState) -> NSWindow {

@@ -1,4 +1,5 @@
 .build/
+build/
 EyeBreak.app/
 AppIcon.iconset/
 *.xcodeproj

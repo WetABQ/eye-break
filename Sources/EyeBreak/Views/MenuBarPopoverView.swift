@@ -30,8 +30,7 @@ struct MenuBarPopoverView: View {
         }
         .padding(16)
         .frame(width: 260)
-        .background(VisualEffectBackground())
-        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .adaptiveGlassBackground()
     }
 
     // MARK: - Permission

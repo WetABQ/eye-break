@@ -9,6 +9,7 @@ struct SettingsView: View {
     @State private var breakSeconds: Double = 20
     @State private var idleSeconds: Double = 30
     @State private var launchAtLogin: Bool = SMAppService.mainApp.status == .enabled
+    @State private var loginError: String?
 
     var body: some View {
         Form {
@@ -53,6 +54,16 @@ struct SettingsView: View {
                 }
             }
 
+            Section("Detection") {
+                Toggle("Count media playback as screen time", isOn: Binding(
+                    get: { settings.countMediaAsScreenTime },
+                    set: { settings.countMediaAsScreenTime = $0 }
+                ))
+                Text("Triggers eye breaks even while watching videos")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
             Section("Menu Bar") {
                 Toggle("Show Live Timer", isOn: Binding(
                     get: { settings.showLiveTimer },
@@ -69,10 +80,23 @@ struct SettingsView: View {
                             } else {
                                 try SMAppService.mainApp.unregister()
                             }
+                            loginError = nil
                         } catch {
                             launchAtLogin = SMAppService.mainApp.status == .enabled
+                            loginError = "Could not update login item automatically. Add EyeBreak manually in System Settings."
                         }
                     }
+
+                if let loginError {
+                    Text(loginError)
+                        .font(.caption)
+                        .foregroundStyle(.orange)
+
+                    Button("Open Login Items in System Settings") {
+                        NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.LoginItems-Settings.extension")!)
+                    }
+                    .font(.caption)
+                }
             }
 
             if let onPreviewBreak {
@@ -90,7 +114,7 @@ struct SettingsView: View {
             }
         }
         .formStyle(.grouped)
-        .frame(width: 520, height: 420)
+        .frame(width: 520, height: 500)
         .onAppear {
             workMinutes = settings.workDuration / 60
             breakSeconds = settings.breakDuration

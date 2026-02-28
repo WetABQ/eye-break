@@ -43,8 +43,7 @@ struct BreakOverlayView: View {
                         .foregroundStyle(.white.opacity(0.5))
                         .padding(.horizontal, 24)
                         .padding(.vertical, 8)
-                        .background(.white.opacity(0.1))
-                        .clipShape(Capsule())
+                        .skipButtonBackground()
                 }
                 .buttonStyle(.plain)
                 .padding(.top, 20)

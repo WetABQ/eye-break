@@ -17,6 +17,9 @@ final class AppSettings {
     var showLiveTimer: Bool {
         didSet { UserDefaults.standard.set(showLiveTimer, forKey: "showLiveTimer") }
     }
+    var countMediaAsScreenTime: Bool {
+        didSet { UserDefaults.standard.set(countMediaAsScreenTime, forKey: "countMediaAsScreenTime") }
+    }
 
     init() {
         let defaults = UserDefaults.standard
@@ -35,11 +38,15 @@ final class AppSettings {
         if defaults.object(forKey: "showLiveTimer") == nil {
             defaults.set(true, forKey: "showLiveTimer")
         }
+        if defaults.object(forKey: "countMediaAsScreenTime") == nil {
+            defaults.set(false, forKey: "countMediaAsScreenTime")
+        }
 
         self.workDuration = defaults.double(forKey: "workDuration")
         self.breakDuration = defaults.double(forKey: "breakDuration")
         self.idleThreshold = defaults.double(forKey: "idleThreshold")
         self.isEnabled = defaults.bool(forKey: "isEnabled")
         self.showLiveTimer = defaults.bool(forKey: "showLiveTimer")
+        self.countMediaAsScreenTime = defaults.bool(forKey: "countMediaAsScreenTime")
     }
 }

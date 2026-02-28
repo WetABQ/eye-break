@@ -5,16 +5,18 @@ final class WorkTimerService {
     private let settings: AppSettings
     private let activityMonitor: ActivityMonitor
     private let breakManager: BreakManager
+    private let mediaMonitor: MediaPlaybackMonitor
 
     private var tickTimer: Timer?
     private var sleepObserver: Any?
     private var wakeObserver: Any?
 
-    init(appState: AppState, settings: AppSettings, activityMonitor: ActivityMonitor, breakManager: BreakManager) {
+    init(appState: AppState, settings: AppSettings, activityMonitor: ActivityMonitor, breakManager: BreakManager, mediaMonitor: MediaPlaybackMonitor) {
         self.appState = appState
         self.settings = settings
         self.activityMonitor = activityMonitor
         self.breakManager = breakManager
+        self.mediaMonitor = mediaMonitor
 
         self.breakManager.onBreakFinished = { [weak self] in
             self?.transitionToIdle()
@@ -44,17 +46,19 @@ final class WorkTimerService {
 
         let idle = activityMonitor.idleDuration()
 
+        let mediaPlaying = settings.countMediaAsScreenTime && mediaMonitor.isMediaPlaying()
+
         switch appState.phase {
         case .idle:
-            if idle < settings.idleThreshold {
-                // User became active
+            if idle < settings.idleThreshold || mediaPlaying {
+                // User became active, or media is playing
                 appState.phase = .working
                 appState.elapsedWork = idle < 2 ? 1 : idle
             }
 
         case .working:
-            if idle >= settings.idleThreshold {
-                // User went idle long enough — reset
+            if idle >= settings.idleThreshold && !mediaPlaying {
+                // User went idle long enough and no media playing — reset
                 transitionToIdle()
             } else {
                 appState.elapsedWork += 1

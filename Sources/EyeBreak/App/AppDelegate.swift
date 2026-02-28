@@ -14,6 +14,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let appState = AppState()
     private let permissionManager = PermissionManager()
     private let activityMonitor = ActivityMonitor()
+    private let mediaMonitor = MediaPlaybackMonitor()
     private var overlayManager: OverlayWindowManager!
     private var breakManager: BreakManager!
     private var workTimerService: WorkTimerService!
@@ -33,7 +34,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             appState: appState,
             settings: settings,
             activityMonitor: activityMonitor,
-            breakManager: breakManager
+            breakManager: breakManager,
+            mediaMonitor: mediaMonitor
         )
 
         setupStatusItem()
@@ -97,9 +99,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         )
 
         let hostingController = NSHostingController(rootView: contentView)
-        // Remove default hosting view background
+        // Remove default hosting view background and clip to rounded corners
         hostingController.view.wantsLayer = true
         hostingController.view.layer?.backgroundColor = .clear
+        hostingController.view.layer?.cornerRadius = 10
+        hostingController.view.layer?.masksToBounds = true
 
         let size = hostingController.view.fittingSize
 
