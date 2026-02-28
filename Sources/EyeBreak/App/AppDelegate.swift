@@ -166,6 +166,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let window = NSWindow(contentViewController: hostingController)
         window.title = "EyeBreak Settings"
         window.styleMask = [.titled, .closable]
+        if #available(macOS 26.0, *) {
+            window.titlebarAppearsTransparent = true
+            window.backgroundColor = .clear
+        }
         window.center()
         window.isReleasedWhenClosed = false
         window.makeKeyAndOrderFront(nil)
