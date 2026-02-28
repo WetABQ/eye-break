@@ -130,7 +130,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         p.isMovableByWindowBackground = false
         p.contentViewController = hostingController
 
-        p.makeKeyAndOrderFront(nil)
+        p.makeKey()
+        p.orderFrontRegardless()
         NSApp.activate(ignoringOtherApps: true)
         self.panel = p
 
@@ -166,9 +167,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let window = NSWindow(contentViewController: hostingController)
         window.title = "EyeBreak Settings"
         window.styleMask = [.titled, .closable]
-        if #available(macOS 26.0, *) {
-            window.backgroundColor = .clear
-        }
         window.center()
         window.isReleasedWhenClosed = false
         window.makeKeyAndOrderFront(nil)

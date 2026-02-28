@@ -90,7 +90,9 @@ struct SettingsView: View {
                         .foregroundStyle(.orange)
 
                     Button("Open Login Items in System Settings") {
-                        NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.LoginItems-Settings.extension")!)
+                        if let url = URL(string: "x-apple.systempreferences:com.apple.LoginItems-Settings.extension") {
+                            NSWorkspace.shared.open(url)
+                        }
                     }
                     .font(.caption)
                 }
@@ -105,7 +107,7 @@ struct SettingsView: View {
         .formStyle(.grouped)
         .scrollIndicators(.hidden)
         .adaptiveFormBackground()
-        .frame(width: 420, height: 400)
+        .frame(width: 520, height: 420)
         .onAppear {
             workMinutes = settings.workDuration / 60
             breakSeconds = settings.breakDuration
