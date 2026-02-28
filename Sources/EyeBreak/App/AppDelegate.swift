@@ -38,9 +38,24 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             mediaMonitor: mediaMonitor
         )
 
+        setupMainMenu()
         setupStatusItem()
         checkPermissionAndStart()
         startStatusUpdates()
+    }
+
+    // MARK: - Main Menu
+
+    private func setupMainMenu() {
+        let mainMenu = NSMenu()
+        let appMenuItem = NSMenuItem()
+        mainMenu.addItem(appMenuItem)
+
+        let appMenu = NSMenu()
+        appMenu.addItem(withTitle: "Close Window", action: #selector(NSWindow.performClose(_:)), keyEquivalent: "w")
+        appMenuItem.submenu = appMenu
+
+        NSApp.mainMenu = mainMenu
     }
 
     // MARK: - Status Item
