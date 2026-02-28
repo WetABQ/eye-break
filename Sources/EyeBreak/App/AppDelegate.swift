@@ -1,6 +1,5 @@
 import Cocoa
 import SwiftUI
-import UserNotifications
 
 private class KeyablePanel: NSPanel {
     override var canBecomeKey: Bool { true }
@@ -22,6 +21,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private var statusUpdateTimer: Timer?
     private var clickMonitor: Any?
+    private var idleReminderPanel: NSPanel?
+    private var idleReminderDismissMonitor: Any?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
@@ -42,7 +43,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         setupStatusItem()
         checkPermissionAndStart()
         startStatusUpdates()
-        setupNotifications()
+        setupIdleReminder()
     }
 
     // MARK: - Status Item
@@ -196,20 +197,93 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
-    // MARK: - Notifications
+    // MARK: - Idle Reminder
 
-    private func setupNotifications() {
-        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { _, _ in }
-
+    private func setupIdleReminder() {
         workTimerService.onBecamePaused = { [weak self] elapsed in
             guard let self, self.settings.showIdleReminder else { return }
-            let minutes = Int(elapsed) / 60
-            let content = UNMutableNotificationContent()
-            content.title = "Timer Paused"
-            content.body = "You've been idle — \(minutes) min of work time preserved."
-            content.sound = .default
-            let request = UNNotificationRequest(identifier: "idle-reminder", content: content, trigger: nil)
-            UNUserNotificationCenter.current().add(request)
+            self.showIdleReminderPanel(elapsed: elapsed)
+        }
+    }
+
+    private func showIdleReminderPanel(elapsed: TimeInterval) {
+        dismissIdleReminder()
+
+        let minutes = Int(elapsed) / 60
+        let seconds = Int(elapsed) % 60
+        let timeStr = minutes > 0
+            ? "\(minutes) min \(seconds) sec"
+            : "\(seconds) sec"
+
+        let view = VStack(spacing: 8) {
+            HStack(spacing: 6) {
+                Image(systemName: "pause.circle.fill")
+                    .foregroundStyle(.orange)
+                    .font(.system(size: 16))
+                Text("Timer Paused")
+                    .font(.system(size: 13, weight: .semibold))
+            }
+            Text("\(timeStr) of work time preserved")
+                .font(.system(size: 11))
+                .foregroundStyle(.secondary)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .background(VisualEffectBackground())
+        .clipShape(RoundedRectangle(cornerRadius: 10))
+
+        let hostingController = NSHostingController(rootView: view)
+        hostingController.view.wantsLayer = true
+        hostingController.view.layer?.backgroundColor = .clear
+        hostingController.view.layer?.cornerRadius = 10
+        hostingController.view.layer?.masksToBounds = true
+
+        let size = hostingController.view.fittingSize
+
+        // Position below the status item
+        var origin = NSPoint.zero
+        if let button = statusItem.button, let buttonWindow = button.window {
+            let buttonFrame = button.convert(button.bounds, to: nil)
+            let screenFrame = buttonWindow.convertToScreen(buttonFrame)
+            origin.x = screenFrame.midX - size.width / 2
+            origin.y = screenFrame.minY - size.height - 4
+        }
+
+        let p = KeyablePanel(
+            contentRect: NSRect(origin: origin, size: size),
+            styleMask: [.nonactivatingPanel, .borderless],
+            backing: .buffered,
+            defer: false
+        )
+        p.isFloatingPanel = true
+        p.level = .floating
+        p.isOpaque = false
+        p.backgroundColor = .clear
+        p.hasShadow = true
+        p.isMovableByWindowBackground = false
+        p.hidesOnDeactivate = false
+        p.contentViewController = hostingController
+
+        p.orderFrontRegardless()
+        self.idleReminderPanel = p
+
+        // Dismiss when clicking anywhere
+        idleReminderDismissMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] _ in
+            self?.dismissIdleReminder()
+        }
+
+        // Auto-dismiss after 5 seconds
+        DispatchQueue.main.asyncAfter(deadline: .now() + 5) { [weak self] in
+            self?.dismissIdleReminder()
+        }
+    }
+
+    private func dismissIdleReminder() {
+        idleReminderPanel?.close()
+        idleReminderPanel = nil
+        if let monitor = idleReminderDismissMonitor {
+            NSEvent.removeMonitor(monitor)
+            idleReminderDismissMonitor = nil
         }
     }
 
