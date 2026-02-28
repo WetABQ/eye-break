@@ -106,7 +106,6 @@ struct SettingsView: View {
         }
         .formStyle(.grouped)
         .scrollIndicators(.hidden)
-        .adaptiveFormBackground()
         .frame(width: 520, height: 420)
         .onAppear {
             workMinutes = settings.workDuration / 60
