@@ -1,6 +1,13 @@
 import Cocoa
 import SwiftUI
 
+/// Borderless NSWindow that can become key, ensuring orderFrontRegardless()
+/// works reliably even for accessory-policy apps.
+private class OverlayWindow: NSWindow {
+    override var canBecomeKey: Bool { true }
+    override var canBecomeMain: Bool { true }
+}
+
 final class OverlayWindowManager {
     private var windows: [NSWindow] = []
     private var screenObserver: Any?
@@ -10,7 +17,11 @@ final class OverlayWindowManager {
     func showOverlay(appState: AppState) {
         removeAllWindows()
 
-        // Activate the app so overlay windows appear even when the app is in the background.
+        // Temporarily become a regular app so we can reliably activate
+        // and bring overlay windows to the front. On macOS 14+,
+        // activate(ignoringOtherApps:) is silently ignored for .accessory
+        // apps that were never foregrounded.
+        NSApp.setActivationPolicy(.regular)
         NSApp.activate(ignoringOtherApps: true)
 
         for screen in NSScreen.screens {
@@ -34,10 +45,14 @@ final class OverlayWindowManager {
             NotificationCenter.default.removeObserver(observer)
             screenObserver = nil
         }
+        // Restore accessory policy so the app hides from the Dock.
+        // The Dock icon was invisible anyway during the break because
+        // the overlay covers all screens.
+        NSApp.setActivationPolicy(.accessory)
     }
 
     private func createOverlayWindow(for screen: NSScreen, appState: AppState) -> NSWindow {
-        let window = NSWindow(
+        let window = OverlayWindow(
             contentRect: screen.frame,
             styleMask: .borderless,
             backing: .buffered,
@@ -46,6 +61,7 @@ final class OverlayWindowManager {
         window.level = .screenSaver
         window.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
         window.isReleasedWhenClosed = false
+        window.hidesOnDeactivate = false
         window.isOpaque = false
         window.backgroundColor = .clear
         window.ignoresMouseEvents = false

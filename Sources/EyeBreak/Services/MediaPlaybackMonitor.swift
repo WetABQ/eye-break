@@ -4,9 +4,13 @@ import IOKit.pwr_mgt
 final class MediaPlaybackMonitor {
     private var cachedResult = false
     private var lastCheckTime: TimeInterval = 0
-    private let cacheInterval: TimeInterval = 5
+    private var lastMediaDetectedTime: TimeInterval = 0
+    private let cacheInterval: TimeInterval = 3
+    /// Keep reporting "playing" for this long after the last real detection,
+    /// bridging brief gaps (ad transitions, buffering, between episodes).
+    private let graceInterval: TimeInterval = 15
 
-    /// Processes that hold PreventUserIdleDisplaySleep but aren't media playback.
+    /// Processes that hold display-sleep assertions but aren't media playback.
     private let ignoredProcesses: Set<String> = [
         "caffeinate",
         "powerd",
@@ -15,16 +19,27 @@ final class MediaPlaybackMonitor {
         "Google Slides",
     ]
 
-    /// Returns `true` if a media-like process holds a `PreventUserIdleDisplaySleep`
-    /// assertion, indicating active video playback.
-    /// Result is cached for 5 seconds to reduce overhead.
+    /// Assertion types that indicate display-active media playback.
+    /// Modern apps use PreventUserIdleDisplaySleep; legacy apps / some
+    /// browsers (e.g. Arc) use NoDisplaySleepAssertion.
+    private let mediaAssertionTypes: Set<String> = [
+        "PreventUserIdleDisplaySleep",  // kIOPMAssertionTypePreventUserIdleDisplaySleep
+        "NoDisplaySleepAssertion",      // kIOPMAssertionTypeNoDisplaySleep (legacy)
+    ]
+
     func isMediaPlaying() -> Bool {
         let now = ProcessInfo.processInfo.systemUptime
         if now - lastCheckTime < cacheInterval {
             return cachedResult
         }
         lastCheckTime = now
-        cachedResult = queryAssertions()
+
+        let detected = queryAssertions()
+        if detected {
+            lastMediaDetectedTime = now
+        }
+        // Real detection OR still within grace period after last detection.
+        cachedResult = detected || (now - lastMediaDetectedTime < graceInterval)
         return cachedResult
     }
 
@@ -41,7 +56,7 @@ final class MediaPlaybackMonitor {
 
             for assertion in assertions {
                 if let type = assertion[kIOPMAssertionTypeKey] as? String,
-                   type == kIOPMAssertionTypePreventUserIdleDisplaySleep {
+                   mediaAssertionTypes.contains(type) {
                     return true
                 }
             }
