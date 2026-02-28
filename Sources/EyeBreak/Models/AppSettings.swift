@@ -20,6 +20,9 @@ final class AppSettings {
     var countMediaAsScreenTime: Bool {
         didSet { UserDefaults.standard.set(countMediaAsScreenTime, forKey: "countMediaAsScreenTime") }
     }
+    var showIdleReminder: Bool {
+        didSet { UserDefaults.standard.set(showIdleReminder, forKey: "showIdleReminder") }
+    }
 
     init() {
         let defaults = UserDefaults.standard
@@ -41,6 +44,9 @@ final class AppSettings {
         if defaults.object(forKey: "countMediaAsScreenTime") == nil {
             defaults.set(false, forKey: "countMediaAsScreenTime")
         }
+        if defaults.object(forKey: "showIdleReminder") == nil {
+            defaults.set(true, forKey: "showIdleReminder")
+        }
 
         self.workDuration = defaults.double(forKey: "workDuration")
         self.breakDuration = defaults.double(forKey: "breakDuration")
@@ -48,5 +54,6 @@ final class AppSettings {
         self.isEnabled = defaults.bool(forKey: "isEnabled")
         self.showLiveTimer = defaults.bool(forKey: "showLiveTimer")
         self.countMediaAsScreenTime = defaults.bool(forKey: "countMediaAsScreenTime")
+        self.showIdleReminder = defaults.bool(forKey: "showIdleReminder")
     }
 }

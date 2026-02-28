@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "Bash(swift build:*)",
+      "Bash(./build.sh:*)",
+      "Bash(sips:*)",
+      "Bash(python3:*)",
+      "Bash(uv pip:*)",
+      "Bash(uvx:*)",
+      "Bash(iconutil:*)",
+      "Bash(git:*)",
+      "Bash(zip:*)",
+      "Bash(codesign:*)",
+      "Bash(gh pr:*)",
+      "Bash(gh api:*)",
+      "Bash(echo:*)",
+      "Bash(codex:*)",
+      "Bash(gh release:*)",
+      "Bash(pmset:*)"
+    ]
+  }
+}

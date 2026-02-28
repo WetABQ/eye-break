@@ -64,6 +64,16 @@ struct SettingsView: View {
                     .foregroundStyle(.secondary)
             }
 
+            Section("Notifications") {
+                Toggle("Idle pause reminder", isOn: Binding(
+                    get: { settings.showIdleReminder },
+                    set: { settings.showIdleReminder = $0 }
+                ))
+                Text("Notify when the timer pauses due to inactivity")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
             Section("General") {
                 Toggle("Show Live Timer", isOn: Binding(
                     get: { settings.showLiveTimer },

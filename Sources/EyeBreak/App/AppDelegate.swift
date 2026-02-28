@@ -1,5 +1,6 @@
 import Cocoa
 import SwiftUI
+import UserNotifications
 
 private class KeyablePanel: NSPanel {
     override var canBecomeKey: Bool { true }
@@ -41,6 +42,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         setupStatusItem()
         checkPermissionAndStart()
         startStatusUpdates()
+        setupNotifications()
     }
 
     // MARK: - Status Item
@@ -65,6 +67,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             button.title = ""
         case .working:
             button.title = settings.showLiveTimer ? " \(appState.formattedWorkLeft)" : ""
+        case .paused:
+            button.title = settings.showLiveTimer ? " ⏸ \(appState.formattedWorkLeft)" : ""
         case .onBreak:
             button.title = settings.showLiveTimer ? " \(appState.formattedRemaining)" : ""
         }
@@ -189,6 +193,23 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             permissionManager.startPolling { [weak self] in
                 self?.appState.hasAccessibilityPermission = true
             }
+        }
+    }
+
+    // MARK: - Notifications
+
+    private func setupNotifications() {
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { _, _ in }
+
+        workTimerService.onBecamePaused = { [weak self] elapsed in
+            guard let self, self.settings.showIdleReminder else { return }
+            let minutes = Int(elapsed) / 60
+            let content = UNMutableNotificationContent()
+            content.title = "Timer Paused"
+            content.body = "You've been idle — \(minutes) min of work time preserved."
+            content.sound = .default
+            let request = UNNotificationRequest(identifier: "idle-reminder", content: content, trigger: nil)
+            UNUserNotificationCenter.current().add(request)
         }
     }
 

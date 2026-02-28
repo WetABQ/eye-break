@@ -3,6 +3,7 @@ import Foundation
 enum AppPhase: String {
     case idle
     case working
+    case paused
     case onBreak
 }
 

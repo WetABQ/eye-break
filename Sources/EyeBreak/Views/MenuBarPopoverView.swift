@@ -82,9 +82,9 @@ struct MenuBarPopoverView: View {
             phaseIcon
         }
 
-        if appState.phase == .working {
+        if appState.phase == .working || appState.phase == .paused {
             ProgressView(value: appState.workProgress)
-                .tint(.blue)
+                .tint(appState.phase == .paused ? .orange : .blue)
 
             HStack {
                 Text("Worked: \(appState.formattedElapsed)")
@@ -113,6 +113,10 @@ struct MenuBarPopoverView: View {
             Image(systemName: "desktopcomputer")
                 .foregroundStyle(.blue)
                 .font(.title2)
+        case .paused:
+            Image(systemName: "pause.circle.fill")
+                .foregroundStyle(.orange)
+                .font(.title2)
         case .onBreak:
             Image(systemName: "eye")
                 .foregroundStyle(.green)
@@ -124,6 +128,7 @@ struct MenuBarPopoverView: View {
         switch appState.phase {
         case .idle: "Idle"
         case .working: "Working"
+        case .paused: "Paused"
         case .onBreak: "On Break"
         }
     }
@@ -132,6 +137,7 @@ struct MenuBarPopoverView: View {
         switch appState.phase {
         case .idle: "Waiting for activity..."
         case .working: "Tracking screen time"
+        case .paused: "Timer paused — waiting for activity"
         case .onBreak: "Rest your eyes!"
         }
     }

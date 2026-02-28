@@ -7,6 +7,10 @@ final class WorkTimerService {
     private let breakManager: BreakManager
     private let mediaMonitor: MediaPlaybackMonitor
 
+    /// Called when the timer transitions from working → paused due to idle.
+    /// Parameter is the elapsed work time at the moment of pausing.
+    var onBecamePaused: ((TimeInterval) -> Void)?
+
     private var tickTimer: Timer?
     private var sleepObserver: Any?
     private var wakeObserver: Any?
@@ -45,25 +49,23 @@ final class WorkTimerService {
         guard !breakManager.isOnBreak() else { return }
 
         let idle = activityMonitor.idleDuration()
-
         let mediaPlaying = settings.countMediaAsScreenTime && mediaMonitor.isMediaPlaying()
+        let userActive = idle < settings.idleThreshold || mediaPlaying
 
         switch appState.phase {
         case .idle:
-            if mediaPlaying {
-                // Media is playing — start fresh work timer
+            if userActive {
                 appState.phase = .working
-                appState.elapsedWork = 1
-            } else if idle < settings.idleThreshold {
-                // User became active
-                appState.phase = .working
-                appState.elapsedWork = idle < 2 ? 1 : idle
+                appState.elapsedWork = mediaPlaying ? 1 : (idle < 2 ? 1 : idle)
             }
 
         case .working:
-            if idle >= settings.idleThreshold && !mediaPlaying {
-                // User went idle long enough and no media playing — reset
-                transitionToIdle()
+            if !userActive {
+                // Pause — preserve elapsedWork
+                appState.phase = .paused
+                if appState.elapsedWork > 60 {
+                    onBecamePaused?(appState.elapsedWork)
+                }
             } else {
                 appState.elapsedWork += 1
                 if appState.elapsedWork >= settings.workDuration {
@@ -71,11 +73,18 @@ final class WorkTimerService {
                 }
             }
 
+        case .paused:
+            if userActive {
+                // Resume from where we left off
+                appState.phase = .working
+            }
+
         case .onBreak:
             break
         }
     }
 
+    /// Full reset — used after break finishes, sleep/wake, and explicit stop.
     private func transitionToIdle() {
         appState.phase = .idle
         appState.elapsedWork = 0
