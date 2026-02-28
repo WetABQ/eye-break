@@ -9,6 +9,7 @@ struct SettingsView: View {
     @State private var breakSeconds: Double = 20
     @State private var idleSeconds: Double = 30
     @State private var launchAtLogin: Bool = SMAppService.mainApp.status == .enabled
+    @State private var loginError: String?
 
     var body: some View {
         Form {
@@ -53,14 +54,21 @@ struct SettingsView: View {
                 }
             }
 
-            Section("Menu Bar") {
+            Section("Detection") {
+                Toggle("Count media playback as screen time", isOn: Binding(
+                    get: { settings.countMediaAsScreenTime },
+                    set: { settings.countMediaAsScreenTime = $0 }
+                ))
+                Text("Triggers eye breaks even while watching videos")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            Section("General") {
                 Toggle("Show Live Timer", isOn: Binding(
                     get: { settings.showLiveTimer },
                     set: { settings.showLiveTimer = $0 }
                 ))
-            }
-
-            Section("General") {
                 Toggle("Launch at Login", isOn: $launchAtLogin)
                     .onChange(of: launchAtLogin) { _, newVal in
                         do {
@@ -69,27 +77,36 @@ struct SettingsView: View {
                             } else {
                                 try SMAppService.mainApp.unregister()
                             }
+                            loginError = nil
                         } catch {
                             launchAtLogin = SMAppService.mainApp.status == .enabled
+                            loginError = "Could not update login item automatically. Add EyeBreak manually in System Settings."
                         }
                     }
-            }
 
-            if let onPreviewBreak {
-                Section {
+                if let loginError {
+                    Text(loginError)
+                        .font(.caption)
+                        .foregroundStyle(.orange)
+
+                    Button("Open Login Items in System Settings") {
+                        if let url = URL(string: "x-apple.systempreferences:com.apple.LoginItems-Settings.extension") {
+                            NSWorkspace.shared.open(url)
+                        }
+                    }
+                    .font(.caption)
+                }
+
+                if let onPreviewBreak {
                     Button(action: onPreviewBreak) {
                         Label("Preview Break", systemImage: "eye")
                     }
                 }
             }
-
-            Section("Info") {
-                Text("EyeBreak monitors your screen activity and reminds you to take breaks to protect your eyes.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
         }
         .formStyle(.grouped)
+        .scrollIndicators(.hidden)
+        .adaptiveFormBackground()
         .frame(width: 520, height: 420)
         .onAppear {
             workMinutes = settings.workDuration / 60
