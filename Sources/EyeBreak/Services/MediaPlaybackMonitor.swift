@@ -6,8 +6,17 @@ final class MediaPlaybackMonitor {
     private var lastCheckTime: TimeInterval = 0
     private let cacheInterval: TimeInterval = 5
 
-    /// Returns `true` if any process holds a `PreventUserIdleDisplaySleep` assertion,
-    /// indicating active media playback (browsers, VLC, QuickTime, streaming apps, etc.).
+    /// Processes that hold PreventUserIdleDisplaySleep but aren't media playback.
+    private let ignoredProcesses: Set<String> = [
+        "caffeinate",
+        "powerd",
+        "Keynote",
+        "PowerPoint",
+        "Google Slides",
+    ]
+
+    /// Returns `true` if a media-like process holds a `PreventUserIdleDisplaySleep`
+    /// assertion, indicating active video playback.
     /// Result is cached for 5 seconds to reduce overhead.
     func isMediaPlaying() -> Bool {
         let now = ProcessInfo.processInfo.systemUptime
@@ -27,7 +36,9 @@ final class MediaPlaybackMonitor {
             return false
         }
 
-        for (_, assertions) in dict {
+        for (processName, assertions) in dict {
+            if ignoredProcesses.contains(processName) { continue }
+
             for assertion in assertions {
                 if let type = assertion[kIOPMAssertionTypeKey] as? String,
                    type == kIOPMAssertionTypePreventUserIdleDisplaySleep {

@@ -50,8 +50,12 @@ final class WorkTimerService {
 
         switch appState.phase {
         case .idle:
-            if idle < settings.idleThreshold || mediaPlaying {
-                // User became active, or media is playing
+            if mediaPlaying {
+                // Media is playing — start fresh work timer
+                appState.phase = .working
+                appState.elapsedWork = 1
+            } else if idle < settings.idleThreshold {
+                // User became active
                 appState.phase = .working
                 appState.elapsedWork = idle < 2 ? 1 : idle
             }
