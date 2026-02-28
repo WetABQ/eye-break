@@ -103,7 +103,7 @@ struct SettingsView: View {
             }
         }
         .formStyle(.grouped)
-        .scrollIndicators(.never)
+        .scrollIndicators(.hidden)
         .adaptiveFormBackground()
         .frame(width: 420, height: 400)
         .onAppear {
